@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import ContactDialog from "@/components/contact-dialog"
+import SearchInput from "@/components/search-input"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -18,19 +19,27 @@ const PAGE_SIZE = 25
 export default async function ContactsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; search?: string }>
 }) {
-  const { page: pageParam } = await searchParams
+  const { page: pageParam, search = "" } = await searchParams
   const page = Math.max(1, Number(pageParam ?? 1))
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
 
   const supabase = await createClient()
-  const { data: contacts, count } = await supabase
+  let query = supabase
     .from("contacts")
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, to)
+
+  if (search) {
+    query = query.or(
+      `name.ilike.%${search}%,email.ilike.%${search}%,company.ilike.%${search}%`
+    )
+  }
+
+  const { data: contacts, count } = await query
 
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
@@ -41,7 +50,10 @@ export default async function ContactsPage({
           <h1 className="text-2xl font-bold">Contacts</h1>
           <p className="text-muted-foreground">{count ?? 0} total</p>
         </div>
-        <ContactDialog />
+        <div className="flex items-center gap-3">
+          <SearchInput placeholder="Search contacts…" />
+          <ContactDialog />
+        </div>
       </div>
 
       <div className="rounded-md border bg-card">
