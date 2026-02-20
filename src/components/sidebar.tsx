@@ -2,14 +2,15 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Users, Kanban, LogOut } from "lucide-react"
+import { LayoutDashboard, Users, Building2, Kanban, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 
 const nav = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
-  { label: "Contacts", href: "/contacts", icon: Users },
+  { label: "Candidates", href: "/candidates", icon: Users },
+  { label: "Clients", href: "/clients", icon: Building2 },
   { label: "Deals", href: "/deals", icon: Kanban },
 ]
 

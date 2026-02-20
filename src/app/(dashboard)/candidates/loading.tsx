@@ -1,4 +1,4 @@
-export default function ContactsLoading() {
+export default function CandidatesLoading() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -12,7 +12,7 @@ export default function ContactsLoading() {
         <div className="p-4 space-y-3">
           <div className="h-4 w-full rounded bg-muted animate-pulse" />
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-10 w-full rounded bg-muted/60 animate-pulse" />
+            <div key={i} className="h-12 w-full rounded bg-muted/60 animate-pulse" />
           ))}
         </div>
       </div>

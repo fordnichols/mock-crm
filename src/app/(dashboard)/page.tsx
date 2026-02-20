@@ -41,12 +41,14 @@ export default async function DashboardPage() {
   const [
     { count: contactCount },
     { data: deals },
-    { data: recentContacts },
+    { data: recentCandidates },
+    { data: recentClients },
     { data: recentDeals },
   ] = await Promise.all([
     supabase.from("contacts").select("*", { count: "exact", head: true }),
     supabase.from("deals").select("value, stage"),
-    supabase.from("contacts").select("id, name, type, company, current_title").order("created_at", { ascending: false }).limit(5),
+    supabase.from("contacts").select("id, name, company, current_title, skills").eq("type", "candidate").order("created_at", { ascending: false }).limit(5),
+    supabase.from("contacts").select("id, name, company, current_title").eq("type", "client").order("created_at", { ascending: false }).limit(5),
     supabase.from("deals").select("id, title, stage, value").order("created_at", { ascending: false }).limit(5),
   ])
 
@@ -80,43 +82,62 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Recent Contacts */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Recent Candidates */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Recent Contacts</CardTitle>
-            <Link
-              href="/contacts"
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <CardTitle className="text-sm font-medium text-muted-foreground">Recent Candidates</CardTitle>
+            <Link href="/candidates" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
               See all <ArrowRight className="h-3 w-3" />
             </Link>
           </CardHeader>
           <CardContent className="p-0">
-            {recentContacts?.length === 0 && (
-              <p className="text-sm text-muted-foreground py-4 text-center">No contacts yet.</p>
+            {recentCandidates?.length === 0 && (
+              <p className="text-sm text-muted-foreground py-4 text-center">No candidates yet.</p>
             )}
-            {recentContacts?.map((contact, i) => (
-              <div key={contact.id} className={`flex items-center justify-between gap-3 px-6 h-14 ${i % 2 === 1 ? "bg-muted/70" : ""}`}>
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={`h-8 w-8 shrink-0 rounded-full bg-gradient-to-br ${getGradient(contact.name)} flex items-center justify-center text-white text-xs font-semibold`}>
-                    {getInitials(contact.name)}
-                  </div>
-                  <div className="min-w-0">
-                    <Link
-                      href={`/contacts/${contact.id}`}
-                      className="text-sm font-medium hover:underline truncate block"
-                    >
-                      {contact.name}
-                    </Link>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {contact.current_title ?? contact.company ?? "—"}
-                    </p>
-                  </div>
+            {recentCandidates?.map((candidate, i) => (
+              <div key={candidate.id} className={`flex items-center gap-3 px-4 h-14 ${i % 2 === 1 ? "bg-muted/70" : ""}`}>
+                <div className={`h-8 w-8 shrink-0 rounded-full bg-gradient-to-br ${getGradient(candidate.name)} flex items-center justify-center text-white text-xs font-semibold`}>
+                  {getInitials(candidate.name)}
                 </div>
-                <Badge variant={contact.type === "candidate" ? "default" : "secondary"} className="shrink-0 text-xs">
-                  {contact.type === "candidate" ? "Candidate" : "Client"}
-                </Badge>
+                <div className="min-w-0">
+                  <Link href={`/contacts/${candidate.id}`} className="text-sm font-medium hover:underline truncate block">
+                    {candidate.name}
+                  </Link>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {candidate.skills?.[0] ?? candidate.current_title ?? "—"}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Recent Clients */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Recent Clients</CardTitle>
+            <Link href="/clients" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              See all <ArrowRight className="h-3 w-3" />
+            </Link>
+          </CardHeader>
+          <CardContent className="p-0">
+            {recentClients?.length === 0 && (
+              <p className="text-sm text-muted-foreground py-4 text-center">No clients yet.</p>
+            )}
+            {recentClients?.map((client, i) => (
+              <div key={client.id} className={`flex items-center gap-3 px-4 h-14 ${i % 2 === 1 ? "bg-muted/70" : ""}`}>
+                <div className={`h-8 w-8 shrink-0 rounded-full bg-gradient-to-br ${getGradient(client.name)} flex items-center justify-center text-white text-xs font-semibold`}>
+                  {getInitials(client.name)}
+                </div>
+                <div className="min-w-0">
+                  <Link href={`/contacts/${client.id}`} className="text-sm font-medium hover:underline truncate block">
+                    {client.name}
+                  </Link>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {client.current_title ?? client.company ?? "—"}
+                  </p>
+                </div>
               </div>
             ))}
           </CardContent>

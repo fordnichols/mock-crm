@@ -29,18 +29,30 @@ interface Contact {
   location: string | null
   remote_preference: string | null
   availability_status: string | null
+  contract_length: string | null
+  availability_window: string | null
+  desired_specialty: string | null
+  salary_budget_min: number | null
+  salary_budget_max: number | null
+  desired_contract_length: string | null
+  desired_availability: string | null
 }
 
 interface ContactFormProps {
   contact?: Contact
+  defaultType?: "candidate" | "client"
   onSuccess?: () => void
 }
 
-export default function ContactForm({ contact, onSuccess }: ContactFormProps) {
+export default function ContactForm({ contact, defaultType, onSuccess }: ContactFormProps) {
   const router = useRouter()
-  const [type, setType] = useState<"candidate" | "client">(contact?.type ?? "candidate")
+  const [type, setType] = useState<"candidate" | "client">(contact?.type ?? defaultType ?? "candidate")
   const [availability, setAvailability] = useState(contact?.availability_status ?? "")
   const [remote, setRemote] = useState(contact?.remote_preference ?? "")
+  const [contractLength, setContractLength] = useState(contact?.contract_length ?? "")
+  const [availabilityWindow, setAvailabilityWindow] = useState(contact?.availability_window ?? "")
+  const [desiredContractLength, setDesiredContractLength] = useState(contact?.desired_contract_length ?? "")
+  const [desiredAvailability, setDesiredAvailability] = useState(contact?.desired_availability ?? "")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -53,6 +65,10 @@ export default function ContactForm({ contact, onSuccess }: ContactFormProps) {
     formData.set("type", type)
     formData.set("availability_status", availability)
     formData.set("remote_preference", remote)
+    formData.set("contract_length", contractLength)
+    formData.set("availability_window", availabilityWindow)
+    formData.set("desired_contract_length", desiredContractLength)
+    formData.set("desired_availability", desiredAvailability)
 
     const result = contact
       ? await updateContact(contact.id, formData)
@@ -162,9 +178,98 @@ export default function ContactForm({ contact, onSuccess }: ContactFormProps) {
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Preferred Contract Length</Label>
+              <Select value={contractLength} onValueChange={setContractLength}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select length" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1 month">1 month</SelectItem>
+                  <SelectItem value="3 months">3 months</SelectItem>
+                  <SelectItem value="6 months">6 months</SelectItem>
+                  <SelectItem value="12 months">12 months</SelectItem>
+                  <SelectItem value="Ongoing">Ongoing</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Availability Window</Label>
+              <Select value={availabilityWindow} onValueChange={setAvailabilityWindow}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select window" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Immediate">Immediate</SelectItem>
+                  <SelectItem value="2 weeks">2 weeks</SelectItem>
+                  <SelectItem value="1 month">1 month</SelectItem>
+                  <SelectItem value="2 months">2 months</SelectItem>
+                  <SelectItem value="3 months">3 months</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="linkedin_url">LinkedIn URL</Label>
             <Input id="linkedin_url" name="linkedin_url" type="url" defaultValue={contact?.linkedin_url ?? ""} placeholder="https://linkedin.com/in/..." />
+          </div>
+        </>
+      )}
+
+      {type === "client" && (
+        <>
+          <div className="border-t pt-4">
+            <p className="text-sm font-medium mb-3">Hiring Needs</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="desired_specialty">Desired Specialty</Label>
+            <Input id="desired_specialty" name="desired_specialty" defaultValue={contact?.desired_specialty ?? ""} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="salary_budget_min">Budget Min ($/day)</Label>
+              <Input id="salary_budget_min" name="salary_budget_min" type="number" min="0" defaultValue={contact?.salary_budget_min ?? ""} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="salary_budget_max">Budget Max ($/day)</Label>
+              <Input id="salary_budget_max" name="salary_budget_max" type="number" min="0" defaultValue={contact?.salary_budget_max ?? ""} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Contract Length Needed</Label>
+              <Select value={desiredContractLength} onValueChange={setDesiredContractLength}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select length" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1 month">1 month</SelectItem>
+                  <SelectItem value="3 months">3 months</SelectItem>
+                  <SelectItem value="6 months">6 months</SelectItem>
+                  <SelectItem value="12 months">12 months</SelectItem>
+                  <SelectItem value="Ongoing">Ongoing</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Needs Surgeon By</Label>
+              <Select value={desiredAvailability} onValueChange={setDesiredAvailability}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select window" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Immediate">Immediate</SelectItem>
+                  <SelectItem value="2 weeks">2 weeks</SelectItem>
+                  <SelectItem value="1 month">1 month</SelectItem>
+                  <SelectItem value="2 months">2 months</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </>
       )}

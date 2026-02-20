@@ -12,6 +12,18 @@ function parseContactFields(formData: FormData, type: string) {
     type,
   }
 
+  if (type === "client") {
+    return {
+      ...base,
+      current_title: formData.get("current_title") as string || null,
+      desired_specialty: formData.get("desired_specialty") as string || null,
+      salary_budget_min: formData.get("salary_budget_min") ? Number(formData.get("salary_budget_min")) : null,
+      salary_budget_max: formData.get("salary_budget_max") ? Number(formData.get("salary_budget_max")) : null,
+      desired_contract_length: formData.get("desired_contract_length") as string || null,
+      desired_availability: formData.get("desired_availability") as string || null,
+    }
+  }
+
   if (type !== "candidate") return base
 
   const skillsRaw = formData.get("skills") as string
@@ -29,6 +41,8 @@ function parseContactFields(formData: FormData, type: string) {
     location: formData.get("location") as string || null,
     remote_preference: formData.get("remote_preference") as string || null,
     availability_status: formData.get("availability_status") as string || null,
+    contract_length: formData.get("contract_length") as string || null,
+    availability_window: formData.get("availability_window") as string || null,
   }
 }
 

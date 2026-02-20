@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/table"
 import ContactDialog from "@/components/contact-dialog"
 import SearchInput from "@/components/search-input"
-import TypeFilter from "@/components/type-filter"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -39,12 +38,12 @@ function getInitials(name: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-export default async function ContactsPage({
+export default async function ClientsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string; type?: string }>
+  searchParams: Promise<{ page?: string; search?: string }>
 }) {
-  const { page: pageParam, search = "", type = "" } = await searchParams
+  const { page: pageParam, search = "" } = await searchParams
   const page = Math.max(1, Number(pageParam ?? 1))
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
@@ -53,7 +52,8 @@ export default async function ContactsPage({
   let query = supabase
     .from("contacts")
     .select("*", { count: "exact" })
-    .order("created_at", { ascending: false })
+    .eq("type", "client")
+    .order("name", { ascending: true })
     .range(from, to)
 
   if (search) {
@@ -62,25 +62,19 @@ export default async function ContactsPage({
     )
   }
 
-  if (type === "candidate" || type === "client") {
-    query = query.eq("type", type)
-  }
-
-  const { data: contacts, count } = await query
-
+  const { data: clients, count } = await query
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Contacts</h1>
+          <h1 className="text-2xl font-bold">Clients</h1>
           <p className="text-muted-foreground">{count ?? 0} total</p>
         </div>
         <div className="flex items-center gap-3">
-          <TypeFilter />
-          <SearchInput placeholder="Search contacts…" />
-          <ContactDialog />
+          <SearchInput placeholder="Search clients…" />
+          <ContactDialog defaultType="client" />
         </div>
       </div>
 
@@ -89,51 +83,50 @@ export default async function ContactsPage({
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Contact</TableHead>
+              <TableHead>Title</TableHead>
               <TableHead>Company</TableHead>
+              <TableHead>Contact</TableHead>
+              <TableHead>Added</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {contacts?.length === 0 && (
+            {clients?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                  No contacts found.
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  No clients found.
                 </TableCell>
               </TableRow>
             )}
-            {contacts?.map((contact, i) => (
-              <TableRow key={contact.id} className={`h-16 hover:bg-blue-50 ${i % 2 === 1 ? "bg-muted/40" : ""}`}>
+            {clients?.map((client, i) => (
+              <TableRow key={client.id} className={`h-16 hover:bg-blue-50 ${i % 2 === 1 ? "bg-muted/40" : ""}`}>
                 <TableCell className="py-3">
                   <div className="flex items-center gap-3">
-                    <div className={`h-10 w-10 shrink-0 rounded-full bg-gradient-to-br ${getGradient(contact.name)} flex items-center justify-center text-white text-sm font-semibold`}>
-                      {getInitials(contact.name)}
+                    <div className={`h-10 w-10 shrink-0 rounded-full bg-gradient-to-br ${getGradient(client.name)} flex items-center justify-center text-white text-sm font-semibold`}>
+                      {getInitials(client.name)}
                     </div>
-                    <Link href={`/contacts/${contact.id}`} className="font-medium hover:underline">
-                      {contact.name}
+                    <Link href={`/contacts/${client.id}`} className="font-medium hover:underline">
+                      {client.name}
                     </Link>
                   </div>
                 </TableCell>
+                <TableCell className="py-3 text-sm text-muted-foreground">
+                  {client.current_title ?? "—"}
+                </TableCell>
                 <TableCell className="py-3">
-                  <Badge variant={contact.type === "candidate" ? "default" : "secondary"}>
-                    {contact.type === "candidate" ? "Candidate" : "Client"}
-                  </Badge>
+                  {client.company
+                    ? <Badge variant="outline">{client.company}</Badge>
+                    : <span className="text-muted-foreground">—</span>
+                  }
                 </TableCell>
                 <TableCell className="py-3">
                   <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">
-                    {contact.email && <span>{contact.email}</span>}
-                    {contact.phone && <span>{contact.phone}</span>}
-                    {!contact.email && !contact.phone && <span>—</span>}
-                    <span className="text-xs">
-                      Added {new Date(contact.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-                    </span>
+                    {client.email && <span>{client.email}</span>}
+                    {client.phone && <span>{client.phone}</span>}
+                    {!client.email && !client.phone && <span>—</span>}
                   </div>
                 </TableCell>
-                <TableCell className="py-3">
-                  {contact.company
-                    ? <Badge variant="outline">{contact.company}</Badge>
-                    : <span className="text-muted-foreground">—</span>
-                  }
+                <TableCell className="py-3 text-sm text-muted-foreground">
+                  {new Date(client.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                 </TableCell>
               </TableRow>
             ))}
@@ -143,18 +136,16 @@ export default async function ContactsPage({
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Page {page} of {totalPages}
-          </p>
+          <p className="text-sm text-muted-foreground">Page {page} of {totalPages}</p>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" asChild disabled={page <= 1}>
-              <Link href={`/contacts?page=${page - 1}${search ? `&search=${encodeURIComponent(search)}` : ""}${type ? `&type=${type}` : ""}`}>
+              <Link href={`/clients?page=${page - 1}${search ? `&search=${encodeURIComponent(search)}` : ""}`}>
                 <ChevronLeft className="h-4 w-4" />
                 Previous
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild disabled={page >= totalPages}>
-              <Link href={`/contacts?page=${page + 1}${search ? `&search=${encodeURIComponent(search)}` : ""}${type ? `&type=${type}` : ""}`}>
+              <Link href={`/clients?page=${page + 1}${search ? `&search=${encodeURIComponent(search)}` : ""}`}>
                 Next
                 <ChevronRight className="h-4 w-4" />
               </Link>

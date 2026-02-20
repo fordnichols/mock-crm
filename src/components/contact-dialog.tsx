@@ -27,13 +27,21 @@ interface Contact {
   location: string | null
   remote_preference: string | null
   availability_status: string | null
+  contract_length: string | null
+  availability_window: string | null
+  desired_specialty: string | null
+  salary_budget_min: number | null
+  salary_budget_max: number | null
+  desired_contract_length: string | null
+  desired_availability: string | null
 }
 
 interface ContactDialogProps {
   contact?: Contact
+  defaultType?: "candidate" | "client"
 }
 
-export default function ContactDialog({ contact }: ContactDialogProps) {
+export default function ContactDialog({ contact, defaultType }: ContactDialogProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -55,7 +63,7 @@ export default function ContactDialog({ contact }: ContactDialogProps) {
         <DialogHeader>
           <DialogTitle>{contact ? "Edit contact" : "New contact"}</DialogTitle>
         </DialogHeader>
-        <ContactForm contact={contact} onSuccess={() => setOpen(false)} />
+        <ContactForm contact={contact} defaultType={defaultType} onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   )
