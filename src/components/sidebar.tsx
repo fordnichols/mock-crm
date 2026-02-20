@@ -28,7 +28,7 @@ export default function Sidebar() {
   return (
     <aside className="flex flex-col w-56 min-h-screen bg-gradient-to-b from-indigo-900 to-blue-900 px-3 py-6">
       <div className="mb-8 px-2">
-        <span className="text-lg font-semibold tracking-tight text-white">CRM</span>
+        <span className="text-lg font-semibold tracking-tight text-white">Mock CRM</span>
       </div>
       <nav className="flex flex-col gap-1 flex-1">
         {nav.map(({ label, href, icon: Icon }) => (
