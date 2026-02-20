@@ -60,11 +60,12 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="overflow-x-auto pb-4">
+      <div className="flex gap-4 min-w-max">
         {STAGES.map(stage => {
           const stageDeals = deals.filter(d => d.stage === stage)
           return (
-            <div key={stage} className="flex flex-col gap-2 min-w-60 w-60">
+            <div key={stage} className="flex flex-col gap-2 w-64 shrink-0">
               <div className="flex items-center gap-2 px-1">
                 <h3 className="text-sm font-semibold">{stage}</h3>
                 <Badge variant="secondary" className="text-xs">{stageDeals.length}</Badge>
@@ -88,6 +89,7 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
             </div>
           )
         })}
+      </div>
       </div>
 
       <DragOverlay>
