@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { memo, useState } from "react"
 import {
   DndContext,
   DragEndEvent,
@@ -29,7 +29,7 @@ interface Deal {
   contact?: { name: string } | null
 }
 
-function KanbanColumn({ stage, deals }: { stage: DealStage; deals: Deal[] }) {
+const KanbanColumn = memo(function KanbanColumn({ stage, deals }: { stage: DealStage; deals: Deal[] }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage })
 
   return (
@@ -53,14 +53,14 @@ function KanbanColumn({ stage, deals }: { stage: DealStage; deals: Deal[] }) {
       </SortableContext>
     </div>
   )
-}
+})
 
 export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) {
   const [deals, setDeals] = useState(initialDeals)
   const [activeId, setActiveId] = useState<string | null>(null)
 
   const sensors = useSensors(useSensor(PointerSensor, {
-    activationConstraint: { distance: 5 },
+    activationConstraint: { distance: 2 },
   }))
 
   function handleDragStart(event: DragStartEvent) {

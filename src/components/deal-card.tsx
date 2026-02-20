@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { Card, CardContent } from "@/components/ui/card"
@@ -16,7 +17,7 @@ interface Deal {
   contact?: { name: string } | null
 }
 
-export default function DealCard({ deal }: { deal: Deal }) {
+const DealCard = memo(function DealCard({ deal }: { deal: Deal }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: deal.id,
   })
@@ -61,4 +62,6 @@ export default function DealCard({ deal }: { deal: Deal }) {
       </Card>
     </div>
   )
-}
+})
+
+export default DealCard
