@@ -11,8 +11,8 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { updateDealStage } from "@/lib/actions/deals"
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { updateDealPositions } from "@/lib/actions/deals"
 import DealCard from "@/components/deal-card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -25,6 +25,7 @@ interface Deal {
   title: string
   value: number | null
   stage: DealStage
+  position: number
   contact?: { name: string } | null
 }
 
@@ -71,8 +72,7 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
     const { active, over } = event
     if (!over) return
 
-    // over.id is either a stage name (dropped on empty column)
-    // or a card id (dropped on another card) — resolve to a stage either way
+    // Resolve destination stage
     let newStage: DealStage
     if (STAGES.includes(over.id as DealStage)) {
       newStage = over.id as DealStage
@@ -83,13 +83,45 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
     }
 
     const activeDeal = deals.find(d => d.id === active.id)
-    if (!activeDeal || activeDeal.stage === newStage) return
+    if (!activeDeal) return
 
-    setDeals(prev =>
-      prev.map(d => d.id === active.id ? { ...d, stage: newStage } : d)
+    // Build the new deals array with correct positions
+    let newDeals = [...deals]
+    const activeIndex = newDeals.findIndex(d => d.id === active.id)
+    const overIndex = newDeals.findIndex(d => d.id === over.id)
+
+    if (activeDeal.stage === newStage) {
+      // Same column — just reorder
+      newDeals = arrayMove(newDeals, activeIndex, overIndex)
+    } else {
+      // Different column — move card, insert at the dropped position
+      newDeals[activeIndex] = { ...activeDeal, stage: newStage }
+      if (overIndex !== -1) {
+        // Dropped on a card — insert before it
+        const [moved] = newDeals.splice(activeIndex, 1)
+        const adjustedIndex = newDeals.findIndex(d => d.id === over.id)
+        newDeals.splice(adjustedIndex, 0, moved)
+      }
+    }
+
+    // Recalculate positions within each stage
+    const withPositions = newDeals.map(deal => {
+      const stageDeals = newDeals.filter(d => d.stage === deal.stage)
+      const position = stageDeals.indexOf(deal)
+      return { ...deal, position }
+    })
+
+    setDeals(withPositions)
+
+    // Persist only the deals whose stage or position changed
+    const changed = withPositions.filter(d => {
+      const original = deals.find(o => o.id === d.id)
+      return original && (original.stage !== d.stage || original.position !== d.position)
+    })
+
+    await updateDealPositions(
+      changed.map(d => ({ id: d.id, stage: d.stage, position: d.position }))
     )
-
-    await updateDealStage(active.id as string, newStage)
   }
 
   const activeDeal = deals.find(d => d.id === activeId)
@@ -102,7 +134,7 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
             <KanbanColumn
               key={stage}
               stage={stage}
-              deals={deals.filter(d => d.stage === stage)}
+              deals={deals.filter(d => d.stage === stage).sort((a, b) => a.position - b.position)}
             />
           ))}
         </div>

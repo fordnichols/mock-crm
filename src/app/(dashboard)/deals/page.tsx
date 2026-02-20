@@ -18,7 +18,7 @@ export default async function DealsPage() {
     supabase
       .from("deals")
       .select("id, title, value, stage, contact:contacts(name)")
-      .order("created_at", { ascending: true }),
+      .order("stage").order("position", { ascending: true }),
     supabase
       .from("contacts")
       .select("id, name")
