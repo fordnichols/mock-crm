@@ -118,7 +118,7 @@ export default function ContactForm({ contact, onSuccess }: ContactFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="skills">Skills (comma separated)</Label>
-            <Input id="skills" name="skills" defaultValue={contact?.skills?.join(", ") ?? ""} placeholder="React, TypeScript, Node.js" />
+            <Input id="skills" name="skills" defaultValue={contact?.skills?.join(", ") ?? ""} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

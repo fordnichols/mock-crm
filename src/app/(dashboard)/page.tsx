@@ -5,6 +5,36 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 
+const GRADIENTS = [
+  "from-blue-400 to-indigo-500",
+  "from-violet-400 to-purple-500",
+  "from-pink-400 to-rose-500",
+  "from-amber-400 to-orange-500",
+  "from-emerald-400 to-teal-500",
+  "from-cyan-400 to-sky-500",
+  "from-indigo-400 to-violet-500",
+  "from-rose-400 to-pink-500",
+]
+
+function getGradient(name: string) {
+  const sum = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  return GRADIENTS[sum % GRADIENTS.length]
+}
+
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0][0].toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+const STAGE_PILL: Record<string, string> = {
+  Lead: "bg-blue-100 text-blue-700",
+  Qualified: "bg-violet-100 text-violet-700",
+  Proposal: "bg-amber-100 text-amber-700",
+  Won: "bg-green-100 text-green-700",
+  Lost: "bg-slate-100 text-slate-600",
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
 
@@ -22,14 +52,6 @@ export default async function DashboardPage() {
 
   const openDeals = deals?.filter(d => d.stage !== "Won" && d.stage !== "Lost") ?? []
   const pipelineValue = openDeals.reduce((sum, d) => sum + (d.value ?? 0), 0)
-
-  const STAGE_VARIANT: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-    Lead: "secondary",
-    Qualified: "outline",
-    Proposal: "default",
-    Won: "default",
-    Lost: "destructive",
-  }
 
   return (
     <div className="space-y-8">
@@ -75,17 +97,22 @@ export default async function DashboardPage() {
               <p className="text-sm text-muted-foreground py-4 text-center">No contacts yet.</p>
             )}
             {recentContacts?.map((contact, i) => (
-              <div key={contact.id} className={`flex items-center justify-between gap-2 px-6 h-12 ${i % 2 === 1 ? "bg-muted/70" : ""}`}>
-                <div className="min-w-0">
-                  <Link
-                    href={`/contacts/${contact.id}`}
-                    className="text-sm font-medium hover:underline truncate block"
-                  >
-                    {contact.name}
-                  </Link>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {contact.current_title ?? contact.company ?? "—"}
-                  </p>
+              <div key={contact.id} className={`flex items-center justify-between gap-3 px-6 h-14 ${i % 2 === 1 ? "bg-muted/70" : ""}`}>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`h-8 w-8 shrink-0 rounded-full bg-gradient-to-br ${getGradient(contact.name)} flex items-center justify-center text-white text-xs font-semibold`}>
+                    {getInitials(contact.name)}
+                  </div>
+                  <div className="min-w-0">
+                    <Link
+                      href={`/contacts/${contact.id}`}
+                      className="text-sm font-medium hover:underline truncate block"
+                    >
+                      {contact.name}
+                    </Link>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {contact.current_title ?? contact.company ?? "—"}
+                    </p>
+                  </div>
                 </div>
                 <Badge variant={contact.type === "candidate" ? "default" : "secondary"} className="shrink-0 text-xs">
                   {contact.type === "candidate" ? "Candidate" : "Client"}
@@ -111,15 +138,17 @@ export default async function DashboardPage() {
               <p className="text-sm text-muted-foreground py-4 text-center">No deals yet.</p>
             )}
             {recentDeals?.map((deal, i) => (
-              <div key={deal.id} className={`flex items-center justify-between gap-2 px-6 h-12 ${i % 2 === 1 ? "bg-muted/70" : ""}`}>
+              <div key={deal.id} className={`flex items-center justify-between gap-2 px-6 h-14 ${i % 2 === 1 ? "bg-muted/70" : ""}`}>
                 <span className="text-sm font-medium truncate">{deal.title}</span>
                 <div className="flex items-center gap-2 shrink-0">
                   {deal.value != null && (
-                    <span className="text-xs text-muted-foreground">${deal.value.toLocaleString()}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {deal.value > 50000 ? "🔥 " : ""}${deal.value.toLocaleString()}
+                    </span>
                   )}
-                  <Badge variant={STAGE_VARIANT[deal.stage] ?? "outline"} className="text-xs">
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STAGE_PILL[deal.stage] ?? "bg-slate-100 text-slate-600"}`}>
                     {deal.stage}
-                  </Badge>
+                  </span>
                 </div>
               </div>
             ))}
