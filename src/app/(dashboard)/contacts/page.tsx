@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Table,
   TableBody,
@@ -10,20 +11,35 @@ import {
 } from "@/components/ui/table"
 import ContactDialog from "@/components/contact-dialog"
 import Link from "next/link"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
-export default async function ContactsPage() {
+const PAGE_SIZE = 25
+
+export default async function ContactsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
+  const { page: pageParam } = await searchParams
+  const page = Math.max(1, Number(pageParam ?? 1))
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
   const supabase = await createClient()
-  const { data: contacts } = await supabase
+  const { data: contacts, count } = await supabase
     .from("contacts")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
+    .range(from, to)
+
+  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Contacts</h1>
-          <p className="text-muted-foreground">{contacts?.length ?? 0} total</p>
+          <p className="text-muted-foreground">{count ?? 0} total</p>
         </div>
         <ContactDialog />
       </div>
@@ -66,6 +82,28 @@ export default async function ContactsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" asChild disabled={page <= 1}>
+              <Link href={`/contacts?page=${page - 1}`}>
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild disabled={page >= totalPages}>
+              <Link href={`/contacts?page=${page + 1}`}>
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
