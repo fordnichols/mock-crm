@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useState } from "react"
+import { memo, useEffect, useState } from "react"
 import {
   DndContext,
   DragEndEvent,
@@ -14,11 +14,17 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { updateDealPositions } from "@/lib/actions/deals"
 import DealCard from "@/components/deal-card"
+import DealSheet from "@/components/deal-sheet"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 const STAGES = ["Lead", "Qualified", "Proposal", "Won", "Lost"] as const
 type DealStage = typeof STAGES[number]
+
+interface Contact {
+  id: string
+  name: string
+}
 
 interface Deal {
   id: string
@@ -26,10 +32,22 @@ interface Deal {
   value: number | null
   stage: DealStage
   position: number
+  description: string | null
+  close_date: string | null
+  contact_id: string | null
   contact?: { name: string } | null
+  created_at: string
 }
 
-const KanbanColumn = memo(function KanbanColumn({ stage, deals }: { stage: DealStage; deals: Deal[] }) {
+const KanbanColumn = memo(function KanbanColumn({
+  stage,
+  deals,
+  onCardClick,
+}: {
+  stage: DealStage
+  deals: Deal[]
+  onCardClick: (deal: Deal) => void
+}) {
   const { setNodeRef, isOver } = useDroppable({ id: stage })
 
   return (
@@ -47,7 +65,7 @@ const KanbanColumn = memo(function KanbanColumn({ stage, deals }: { stage: DealS
           )}
         >
           {deals.map(deal => (
-            <DealCard key={deal.id} deal={deal} />
+            <DealCard key={deal.id} deal={deal} onClick={() => onCardClick(deal)} />
           ))}
         </div>
       </SortableContext>
@@ -55,9 +73,21 @@ const KanbanColumn = memo(function KanbanColumn({ stage, deals }: { stage: DealS
   )
 })
 
-export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) {
+export default function KanbanBoard({
+  initialDeals,
+  contacts,
+}: {
+  initialDeals: Deal[]
+  contacts: Contact[]
+}) {
   const [deals, setDeals] = useState(initialDeals)
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null)
+
+  // Sync local state when server re-fetches after a mutation
+  useEffect(() => {
+    setDeals(initialDeals)
+  }, [initialDeals])
 
   const sensors = useSensors(useSensor(PointerSensor, {
     activationConstraint: { distance: 2 },
@@ -72,7 +102,6 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
     const { active, over } = event
     if (!over) return
 
-    // Resolve destination stage
     let newStage: DealStage
     if (STAGES.includes(over.id as DealStage)) {
       newStage = over.id as DealStage
@@ -85,26 +114,21 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
     const activeDeal = deals.find(d => d.id === active.id)
     if (!activeDeal) return
 
-    // Build the new deals array with correct positions
     let newDeals = [...deals]
     const activeIndex = newDeals.findIndex(d => d.id === active.id)
     const overIndex = newDeals.findIndex(d => d.id === over.id)
 
     if (activeDeal.stage === newStage) {
-      // Same column — just reorder
       newDeals = arrayMove(newDeals, activeIndex, overIndex)
     } else {
-      // Different column — move card, insert at the dropped position
       newDeals[activeIndex] = { ...activeDeal, stage: newStage }
       if (overIndex !== -1) {
-        // Dropped on a card — insert before it
         const [moved] = newDeals.splice(activeIndex, 1)
         const adjustedIndex = newDeals.findIndex(d => d.id === over.id)
         newDeals.splice(adjustedIndex, 0, moved)
       }
     }
 
-    // Recalculate positions within each stage
     const withPositions = newDeals.map(deal => {
       const stageDeals = newDeals.filter(d => d.stage === deal.stage)
       const position = stageDeals.indexOf(deal)
@@ -113,7 +137,6 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
 
     setDeals(withPositions)
 
-    // Persist only the deals whose stage or position changed
     const changed = withPositions.filter(d => {
       const original = deals.find(o => o.id === d.id)
       return original && (original.stage !== d.stage || original.position !== d.position)
@@ -127,22 +150,31 @@ export default function KanbanBoard({ initialDeals }: { initialDeals: Deal[] }) 
   const activeDeal = deals.find(d => d.id === activeId)
 
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="overflow-x-auto pb-4">
-        <div className="flex gap-4 min-w-max">
-          {STAGES.map(stage => (
-            <KanbanColumn
-              key={stage}
-              stage={stage}
-              deals={deals.filter(d => d.stage === stage).sort((a, b) => a.position - b.position)}
-            />
-          ))}
+    <>
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <div className="overflow-x-auto pb-4">
+          <div className="flex gap-4 min-w-max">
+            {STAGES.map(stage => (
+              <KanbanColumn
+                key={stage}
+                stage={stage}
+                deals={deals.filter(d => d.stage === stage).sort((a, b) => a.position - b.position)}
+                onCardClick={setSelectedDeal}
+              />
+            ))}
+          </div>
         </div>
-      </div>
 
-      <DragOverlay>
-        {activeDeal && <DealCard deal={activeDeal} />}
-      </DragOverlay>
-    </DndContext>
+        <DragOverlay>
+          {activeDeal && <DealCard deal={activeDeal} onClick={() => {}} />}
+        </DragOverlay>
+      </DndContext>
+
+      <DealSheet
+        deal={selectedDeal}
+        contacts={contacts}
+        onClose={() => setSelectedDeal(null)}
+      />
+    </>
   )
 }

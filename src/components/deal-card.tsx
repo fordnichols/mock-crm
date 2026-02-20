@@ -17,7 +17,7 @@ interface Deal {
   contact?: { name: string } | null
 }
 
-const DealCard = memo(function DealCard({ deal }: { deal: Deal }) {
+const DealCard = memo(function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: deal.id,
   })
@@ -34,6 +34,7 @@ const DealCard = memo(function DealCard({ deal }: { deal: Deal }) {
         className="group cursor-grab active:cursor-grabbing"
         {...attributes}
         {...listeners}
+        onClick={onClick}
       >
         <CardContent className="p-3">
           <p className="text-sm font-medium leading-snug truncate">{deal.title}</p>

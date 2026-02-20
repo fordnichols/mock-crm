@@ -49,6 +49,23 @@ export async function updateDealPositions(
   return { success: true }
 }
 
+export async function updateDeal(id: string, formData: FormData) {
+  const supabase = await createClient()
+
+  const { error } = await supabase.from("deals").update({
+    title: formData.get("title") as string,
+    value: Number(formData.get("value") ?? 0),
+    stage: formData.get("stage") as DealStage,
+    description: formData.get("description") as string,
+    close_date: formData.get("close_date") || null,
+    contact_id: formData.get("contact_id") || null,
+  }).eq("id", id)
+
+  if (error) return { error: error.message }
+  revalidatePath("/deals")
+  return { success: true }
+}
+
 export async function deleteDeal(id: string) {
   const supabase = await createClient()
 

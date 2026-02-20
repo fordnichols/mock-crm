@@ -17,7 +17,7 @@ export default async function DealsPage() {
   const [{ data: deals }, { data: contacts }] = await Promise.all([
     supabase
       .from("deals")
-      .select("id, title, value, stage, contact:contacts(name)")
+      .select("id, title, value, stage, position, description, close_date, contact_id, contact:contacts(name), created_at")
       .order("stage").order("position", { ascending: true }),
     supabase
       .from("contacts")
@@ -48,7 +48,7 @@ export default async function DealsPage() {
         </Dialog>
       </div>
 
-      <KanbanBoard initialDeals={(deals ?? []) as any} />
+      <KanbanBoard initialDeals={(deals ?? []) as any} contacts={contacts ?? []} />
     </div>
   )
 }
