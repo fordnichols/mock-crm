@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table"
 import ContactDialog from "@/components/contact-dialog"
 import SearchInput from "@/components/search-input"
+import TypeFilter from "@/components/type-filter"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -19,9 +20,9 @@ const PAGE_SIZE = 25
 export default async function ContactsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string }>
+  searchParams: Promise<{ page?: string; search?: string; type?: string }>
 }) {
-  const { page: pageParam, search = "" } = await searchParams
+  const { page: pageParam, search = "", type = "" } = await searchParams
   const page = Math.max(1, Number(pageParam ?? 1))
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
@@ -39,6 +40,10 @@ export default async function ContactsPage({
     )
   }
 
+  if (type === "candidate" || type === "client") {
+    query = query.eq("type", type)
+  }
+
   const { data: contacts, count } = await query
 
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
@@ -51,6 +56,7 @@ export default async function ContactsPage({
           <p className="text-muted-foreground">{count ?? 0} total</p>
         </div>
         <div className="flex items-center gap-3">
+          <TypeFilter />
           <SearchInput placeholder="Search contacts…" />
           <ContactDialog />
         </div>
@@ -61,6 +67,7 @@ export default async function ContactsPage({
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Company</TableHead>
@@ -69,8 +76,8 @@ export default async function ContactsPage({
           <TableBody>
             {contacts?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                  No contacts yet. Add your first one.
+                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  No contacts found.
                 </TableCell>
               </TableRow>
             )}
@@ -81,11 +88,16 @@ export default async function ContactsPage({
                     {contact.name}
                   </Link>
                 </TableCell>
+                <TableCell>
+                  <Badge variant={contact.type === "candidate" ? "default" : "secondary"}>
+                    {contact.type === "candidate" ? "Candidate" : "Client"}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-muted-foreground">{contact.email ?? "—"}</TableCell>
                 <TableCell className="text-muted-foreground">{contact.phone ?? "—"}</TableCell>
                 <TableCell>
                   {contact.company
-                    ? <Badge variant="secondary">{contact.company}</Badge>
+                    ? <Badge variant="outline">{contact.company}</Badge>
                     : <span className="text-muted-foreground">—</span>
                   }
                 </TableCell>
@@ -102,13 +114,13 @@ export default async function ContactsPage({
           </p>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" asChild disabled={page <= 1}>
-              <Link href={`/contacts?page=${page - 1}`}>
+              <Link href={`/contacts?page=${page - 1}${search ? `&search=${encodeURIComponent(search)}` : ""}${type ? `&type=${type}` : ""}`}>
                 <ChevronLeft className="h-4 w-4" />
                 Previous
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild disabled={page >= totalPages}>
-              <Link href={`/contacts?page=${page + 1}`}>
+              <Link href={`/contacts?page=${page + 1}${search ? `&search=${encodeURIComponent(search)}` : ""}${type ? `&type=${type}` : ""}`}>
                 Next
                 <ChevronRight className="h-4 w-4" />
               </Link>

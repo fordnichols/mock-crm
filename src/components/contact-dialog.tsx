@@ -18,6 +18,15 @@ interface Contact {
   email: string | null
   phone: string | null
   company: string | null
+  type: "candidate" | "client"
+  linkedin_url: string | null
+  current_title: string | null
+  years_experience: number | null
+  skills: string[] | null
+  salary_expectation: number | null
+  location: string | null
+  remote_preference: string | null
+  availability_status: string | null
 }
 
 interface ContactDialogProps {

@@ -3,17 +3,44 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 
+function parseContactFields(formData: FormData, type: string) {
+  const base = {
+    name: formData.get("name") as string,
+    email: formData.get("email") as string || null,
+    phone: formData.get("phone") as string || null,
+    company: formData.get("company") as string || null,
+    type,
+  }
+
+  if (type !== "candidate") return base
+
+  const skillsRaw = formData.get("skills") as string
+  const skills = skillsRaw
+    ? skillsRaw.split(",").map(s => s.trim()).filter(Boolean)
+    : null
+
+  return {
+    ...base,
+    linkedin_url: formData.get("linkedin_url") as string || null,
+    current_title: formData.get("current_title") as string || null,
+    years_experience: formData.get("years_experience") ? Number(formData.get("years_experience")) : null,
+    skills,
+    salary_expectation: formData.get("salary_expectation") ? Number(formData.get("salary_expectation")) : null,
+    location: formData.get("location") as string || null,
+    remote_preference: formData.get("remote_preference") as string || null,
+    availability_status: formData.get("availability_status") as string || null,
+  }
+}
+
 export async function createContact(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: "Not authenticated" }
 
+  const type = formData.get("type") as string || "candidate"
   const { error } = await supabase.from("contacts").insert({
     user_id: user.id,
-    name: formData.get("name") as string,
-    email: formData.get("email") as string,
-    phone: formData.get("phone") as string,
-    company: formData.get("company") as string,
+    ...parseContactFields(formData, type),
   })
 
   if (error) return { error: error.message }
@@ -24,12 +51,10 @@ export async function createContact(formData: FormData) {
 export async function updateContact(id: string, formData: FormData) {
   const supabase = await createClient()
 
-  const { error } = await supabase.from("contacts").update({
-    name: formData.get("name") as string,
-    email: formData.get("email") as string,
-    phone: formData.get("phone") as string,
-    company: formData.get("company") as string,
-  }).eq("id", id)
+  const type = formData.get("type") as string || "candidate"
+  const { error } = await supabase.from("contacts")
+    .update(parseContactFields(formData, type))
+    .eq("id", id)
 
   if (error) return { error: error.message }
   revalidatePath("/contacts")
