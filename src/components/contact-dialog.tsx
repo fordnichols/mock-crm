@@ -40,12 +40,12 @@ export default function ContactDialog({ contact }: ContactDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {contact ? (
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="cursor-pointer">
             <Pencil className="h-4 w-4 mr-2" />
             Edit
           </Button>
         ) : (
-          <Button>
+          <Button className="cursor-pointer">
             <Plus className="h-4 w-4 mr-2" />
             Add contact
           </Button>

@@ -70,12 +70,12 @@ export default async function DashboardPage() {
               See all <ArrowRight className="h-3 w-3" />
             </Link>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="p-0">
             {recentContacts?.length === 0 && (
               <p className="text-sm text-muted-foreground py-4 text-center">No contacts yet.</p>
             )}
-            {recentContacts?.map(contact => (
-              <div key={contact.id} className="flex items-center justify-between gap-2">
+            {recentContacts?.map((contact, i) => (
+              <div key={contact.id} className={`flex items-center justify-between gap-2 px-6 h-12 ${i % 2 === 1 ? "bg-muted/70" : ""}`}>
                 <div className="min-w-0">
                   <Link
                     href={`/contacts/${contact.id}`}
@@ -106,12 +106,12 @@ export default async function DashboardPage() {
               See all <ArrowRight className="h-3 w-3" />
             </Link>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="p-0">
             {recentDeals?.length === 0 && (
               <p className="text-sm text-muted-foreground py-4 text-center">No deals yet.</p>
             )}
-            {recentDeals?.map(deal => (
-              <div key={deal.id} className="flex items-center justify-between gap-2">
+            {recentDeals?.map((deal, i) => (
+              <div key={deal.id} className={`flex items-center justify-between gap-2 px-6 h-12 ${i % 2 === 1 ? "bg-muted/70" : ""}`}>
                 <span className="text-sm font-medium truncate">{deal.title}</span>
                 <div className="flex items-center gap-2 shrink-0">
                   {deal.value != null && (

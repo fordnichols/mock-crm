@@ -33,7 +33,7 @@ export default function TypeFilter() {
           key={opt.value}
           variant={current === opt.value ? "secondary" : "ghost"}
           size="sm"
-          className="h-7 px-3 text-xs"
+          className={`h-7 px-3 text-xs cursor-pointer ${current === opt.value ? "bg-muted-foreground/20 hover:bg-muted-foreground/20" : ""}`}
           onClick={() => handleClick(opt.value)}
         >
           {opt.label}
