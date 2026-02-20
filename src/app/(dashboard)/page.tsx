@@ -67,18 +67,24 @@ export default async function DashboardPage() {
           title="Total Contacts"
           value={contactCount ?? 0}
           icon={Users}
+          gradient="from-violet-500 to-indigo-600"
+          trend="+12%"
         />
         <KpiCard
           title="Open Deals"
           value={openDeals.length}
           sub={`${deals?.length ?? 0} total`}
           icon={Handshake}
+          gradient="from-blue-500 to-cyan-500"
+          trend="+8%"
         />
         <KpiCard
           title="Pipeline Value"
           value={`$${pipelineValue.toLocaleString()}`}
           sub="across open deals"
           icon={DollarSign}
+          gradient="from-emerald-500 to-teal-500"
+          trend="+23%"
         />
       </div>
 
