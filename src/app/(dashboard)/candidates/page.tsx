@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table"
 import ContactDialog from "@/components/contact-dialog"
 import SearchInput from "@/components/search-input"
+import SpecialtyFilter from "@/components/specialty-filter"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -53,9 +54,9 @@ const AVAILABILITY_LABEL: Record<string, string> = {
 export default async function CandidatesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string }>
+  searchParams: Promise<{ page?: string; search?: string; specialty?: string }>
 }) {
-  const { page: pageParam, search = "" } = await searchParams
+  const { page: pageParam, search = "", specialty = "" } = await searchParams
   const page = Math.max(1, Number(pageParam ?? 1))
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
@@ -70,8 +71,12 @@ export default async function CandidatesPage({
 
   if (search) {
     query = query.or(
-      `name.ilike.%${search}%,email.ilike.%${search}%,company.ilike.%${search}%,skills::text.ilike.%${search}%`
+      `name.ilike.%${search}%,email.ilike.%${search}%,company.ilike.%${search}%`
     )
+  }
+
+  if (specialty) {
+    query = query.contains("skills", [specialty])
   }
 
   const { data: candidates, count } = await query
@@ -85,6 +90,7 @@ export default async function CandidatesPage({
           <p className="text-muted-foreground">{count ?? 0} total</p>
         </div>
         <div className="flex items-center gap-3">
+          <SpecialtyFilter />
           <SearchInput placeholder="Search candidates…" />
           <ContactDialog defaultType="candidate" />
         </div>
