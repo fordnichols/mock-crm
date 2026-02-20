@@ -25,9 +25,9 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="flex flex-col w-56 min-h-screen border-r bg-card px-3 py-6">
+    <aside className="flex flex-col w-56 min-h-screen bg-gradient-to-b from-indigo-900 to-blue-900 px-3 py-6">
       <div className="mb-8 px-2">
-        <span className="text-lg font-semibold tracking-tight">CRM</span>
+        <span className="text-lg font-semibold tracking-tight text-white">CRM</span>
       </div>
       <nav className="flex flex-col gap-1 flex-1">
         {nav.map(({ label, href, icon: Icon }) => (
@@ -37,8 +37,8 @@ export default function Sidebar() {
             className={cn(
               "flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors",
               pathname === href
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "bg-white/15 text-white"
+                : "text-blue-200 hover:bg-white/10 hover:text-white"
             )}
           >
             <Icon className="h-4 w-4" />
@@ -48,7 +48,7 @@ export default function Sidebar() {
       </nav>
       <Button
         variant="ghost"
-        className="justify-start gap-3 text-muted-foreground"
+        className="justify-start gap-3 text-blue-200 hover:text-white hover:bg-white/10 cursor-pointer"
         onClick={handleSignOut}
       >
         <LogOut className="h-4 w-4" />

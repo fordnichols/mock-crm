@@ -21,6 +21,14 @@ import { cn } from "@/lib/utils"
 const STAGES = ["Lead", "Qualified", "Proposal", "Won", "Lost"] as const
 type DealStage = typeof STAGES[number]
 
+const STAGE_PILL: Record<DealStage, string> = {
+  Lead: "bg-blue-100 text-blue-700",
+  Qualified: "bg-violet-100 text-violet-700",
+  Proposal: "bg-amber-100 text-amber-700",
+  Won: "bg-green-100 text-green-700",
+  Lost: "bg-slate-100 text-slate-600",
+}
+
 interface Contact {
   id: string
   name: string
@@ -53,14 +61,14 @@ const KanbanColumn = memo(function KanbanColumn({
   return (
     <div className="flex flex-col gap-2 w-64 shrink-0">
       <div className="flex items-center gap-2 px-1">
-        <h3 className="text-sm font-semibold">{stage}</h3>
+        <span className={cn("text-xs font-semibold px-2.5 py-0.5 rounded-full", STAGE_PILL[stage])}>{stage}</span>
         <Badge variant="secondary" className="text-xs">{deals.length}</Badge>
       </div>
       <SortableContext id={stage} items={deals.map(d => d.id)} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
           className={cn(
-            "flex-1 min-h-32 rounded-xl border bg-card p-2 space-y-2 transition-colors",
+            "flex-1 min-h-32 rounded-xl border bg-muted p-2 space-y-2 transition-colors",
             isOver && "border-primary bg-primary/5"
           )}
         >

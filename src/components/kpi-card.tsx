@@ -6,11 +6,12 @@ interface KpiCardProps {
   value: string | number
   sub?: string
   icon: LucideIcon
+  className?: string
 }
 
-export default function KpiCard({ title, value, sub, icon: Icon }: KpiCardProps) {
+export default function KpiCard({ title, value, sub, icon: Icon, className }: KpiCardProps) {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
