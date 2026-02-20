@@ -21,6 +21,14 @@ const AVAILABILITY_PILL: Record<string, string> = {
   not_looking: "bg-slate-100 text-slate-600",
 }
 
+const STAGE_PILL: Record<string, string> = {
+  Lead: "bg-blue-100 text-blue-700",
+  Qualified: "bg-violet-100 text-violet-700",
+  Proposal: "bg-amber-100 text-amber-700",
+  Won: "bg-green-100 text-green-700",
+  Lost: "bg-slate-100 text-slate-600",
+}
+
 const REMOTE_LABEL: Record<string, string> = {
   remote: "Remote",
   hybrid: "Hybrid",
@@ -74,9 +82,9 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold">{contact.name}</h1>
-            <Badge variant={isCandidate ? "default" : "secondary"}>
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${isCandidate ? "bg-violet-100 text-violet-700" : "bg-blue-100 text-blue-700"}`}>
               {isCandidate ? "Candidate" : "Client"}
-            </Badge>
+            </span>
           </div>
           {contact.current_title && (
             <p className="text-muted-foreground mt-0.5">{contact.current_title}</p>
@@ -104,12 +112,11 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
 
       {/* Availability badge for candidates */}
       {isCandidate && contact.availability_status && (
-        <Badge variant={
-          contact.availability_status === "actively_looking" ? "default" :
-          contact.availability_status === "open" ? "secondary" : "outline"
-        }>
-          {AVAILABILITY_LABEL[contact.availability_status] ?? contact.availability_status}
-        </Badge>
+        <div>
+          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${AVAILABILITY_PILL[contact.availability_status] ?? "bg-slate-100 text-slate-600"}`}>
+            {AVAILABILITY_LABEL[contact.availability_status] ?? contact.availability_status}
+          </span>
+        </div>
       )}
 
       {/* Core details */}
@@ -318,7 +325,9 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
                     <span className="font-medium">{deal.title}</span>
                     <div className="flex items-center gap-3">
                       <span className="text-muted-foreground">${deal.value?.toLocaleString()}</span>
-                      <Badge variant="outline">{deal.stage}</Badge>
+                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STAGE_PILL[deal.stage] ?? "bg-slate-100 text-slate-600"}`}>
+                        {deal.stage}
+                      </span>
                     </div>
                   </li>
                 ))}
