@@ -1,19 +1,12 @@
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import { deleteContact } from "@/lib/actions/contacts"
-import ContactForm from "@/components/contact-form"
+import ContactDialog from "@/components/contact-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import Link from "next/link"
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react"
+import { ArrowLeft, Trash2 } from "lucide-react"
 
 export default async function ContactDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -52,20 +45,7 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
           )}
         </div>
         <div className="flex gap-2">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit contact</DialogTitle>
-              </DialogHeader>
-              <ContactForm contact={contact} />
-            </DialogContent>
-          </Dialog>
+          <ContactDialog contact={contact} />
           <form action={async () => {
             "use server"
             await deleteContact(id)

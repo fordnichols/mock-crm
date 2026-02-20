@@ -1,13 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import {
   Table,
   TableBody,
@@ -16,9 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import ContactForm from "@/components/contact-form"
+import ContactDialog from "@/components/contact-dialog"
 import Link from "next/link"
-import { Plus } from "lucide-react"
 
 export default async function ContactsPage() {
   const supabase = await createClient()
@@ -34,20 +25,7 @@ export default async function ContactsPage() {
           <h1 className="text-2xl font-bold">Contacts</h1>
           <p className="text-muted-foreground">{contacts?.length ?? 0} total</p>
         </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add contact
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>New contact</DialogTitle>
-            </DialogHeader>
-            <ContactForm />
-          </DialogContent>
-        </Dialog>
+        <ContactDialog />
       </div>
 
       <div className="rounded-md border bg-card">
