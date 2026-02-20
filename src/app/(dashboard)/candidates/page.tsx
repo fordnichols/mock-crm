@@ -70,7 +70,7 @@ export default async function CandidatesPage({
 
   if (search) {
     query = query.or(
-      `name.ilike.%${search}%,email.ilike.%${search}%,company.ilike.%${search}%`
+      `name.ilike.%${search}%,email.ilike.%${search}%,company.ilike.%${search}%,skills::text.ilike.%${search}%`
     )
   }
 
@@ -117,14 +117,9 @@ export default async function CandidatesPage({
                     <div className={`h-10 w-10 shrink-0 rounded-full bg-gradient-to-br ${getGradient(candidate.name)} flex items-center justify-center text-white text-sm font-semibold`}>
                       {getInitials(candidate.name)}
                     </div>
-                    <div className="min-w-0">
-                      <Link href={`/contacts/${candidate.id}`} className="font-medium hover:underline block">
-                        {candidate.name}
-                      </Link>
-                      {candidate.current_title && (
-                        <p className="text-xs text-muted-foreground truncate">{candidate.current_title}</p>
-                      )}
-                    </div>
+                    <Link href={`/contacts/${candidate.id}`} className="font-medium hover:underline">
+                      {candidate.name}
+                    </Link>
                   </div>
                 </TableCell>
                 <TableCell className="py-3">
