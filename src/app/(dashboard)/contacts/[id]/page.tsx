@@ -124,6 +124,10 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
               <span>{contact.location}</span>
             </div>
           )}
+          <div className="flex gap-2">
+              <span className="text-muted-foreground w-28">Added</span>
+              <span>{new Date(contact.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span>
+            </div>
           {contact.linkedin_url && (
             <div className="flex gap-2">
               <span className="text-muted-foreground w-28">LinkedIn</span>

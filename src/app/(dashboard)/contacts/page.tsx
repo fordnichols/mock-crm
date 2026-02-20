@@ -17,6 +17,28 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 
 const PAGE_SIZE = 25
 
+const GRADIENTS = [
+  "from-blue-400 to-indigo-500",
+  "from-violet-400 to-purple-500",
+  "from-pink-400 to-rose-500",
+  "from-amber-400 to-orange-500",
+  "from-emerald-400 to-teal-500",
+  "from-cyan-400 to-sky-500",
+  "from-indigo-400 to-violet-500",
+  "from-rose-400 to-pink-500",
+]
+
+function getGradient(name: string) {
+  const sum = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  return GRADIENTS[sum % GRADIENTS.length]
+}
+
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0][0].toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
 export default async function ContactsPage({
   searchParams,
 }: {
@@ -68,34 +90,46 @@ export default async function ContactsPage({
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
+              <TableHead>Contact</TableHead>
               <TableHead>Company</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {contacts?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                   No contacts found.
                 </TableCell>
               </TableRow>
             )}
-            {contacts?.map(contact => (
-              <TableRow key={contact.id}>
-                <TableCell>
-                  <Link href={`/contacts/${contact.id}`} className="font-medium hover:underline">
-                    {contact.name}
-                  </Link>
+            {contacts?.map((contact, i) => (
+              <TableRow key={contact.id} className={`h-16 hover:bg-blue-50 ${i % 2 === 1 ? "bg-muted/40" : ""}`}>
+                <TableCell className="py-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-10 w-10 shrink-0 rounded-full bg-gradient-to-br ${getGradient(contact.name)} flex items-center justify-center text-white text-sm font-semibold`}>
+                      {getInitials(contact.name)}
+                    </div>
+                    <Link href={`/contacts/${contact.id}`} className="font-medium hover:underline">
+                      {contact.name}
+                    </Link>
+                  </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-3">
                   <Badge variant={contact.type === "candidate" ? "default" : "secondary"}>
                     {contact.type === "candidate" ? "Candidate" : "Client"}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{contact.email ?? "—"}</TableCell>
-                <TableCell className="text-muted-foreground">{contact.phone ?? "—"}</TableCell>
-                <TableCell>
+                <TableCell className="py-3">
+                  <div className="flex flex-col gap-0.5 text-sm text-muted-foreground">
+                    {contact.email && <span>{contact.email}</span>}
+                    {contact.phone && <span>{contact.phone}</span>}
+                    {!contact.email && !contact.phone && <span>—</span>}
+                    <span className="text-xs">
+                      Added {new Date(contact.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-3">
                   {contact.company
                     ? <Badge variant="outline">{contact.company}</Badge>
                     : <span className="text-muted-foreground">—</span>
